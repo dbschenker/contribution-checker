@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2023 DB Systel GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[tool.poetry]
+name = "contribution-checker"
+version = "0.1.0"
+description = "Check for contributions matching a certain pattern in repositories"
+authors = ["Max Mehl <max.mehl@deutschebahn.com>"]
+readme = "README.md"
+packages = [{include = "contribution_checker"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+gitpython = "^3.1.32"
+numpy = "^1.25.2"
+matplotlib = "^3.7.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.17.4"
+black = "^23.7.0"
+pylama = "^8.4.1"
+isort = "^5.12.0"
+mypy = "^1.5.0"
+
+[tool.poetry.scripts]
+checker = 'contribution_checker.checker:main'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# MYPY settings
+[tool.mypy]
+files = [
+    "contribution_checker/*.py",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "matplotlib",
+    "matplotlib.pyplot",
+]
+ignore_missing_imports = true
