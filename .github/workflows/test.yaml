@@ -1,0 +1,90 @@
+# SPDX-FileCopyrightText: 2023 DB Systel GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Test suites
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  selftest:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 10
+      # do not abort the whole test job if one combination in the matrix fails
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+        os: [ubuntu-20.04]
+        include:
+          - python-version: "3.9"
+            os: macos-latest
+          - python-version: "3.9"
+            os: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # Fetch all commits and branches
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install --no-interaction
+      - name: Check out full main branch
+        uses: actions/checkout@v2
+        with:
+          # checkout full main branch
+          ref: "main"
+          fetch-depth: 0
+      - name: Run tool against own repo
+        run: |
+          poetry run checker --email ".*@deutschebahn.com" --directory .
+
+  formatting:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install --no-interaction
+      - name: Test formatting with isort and black
+        run: |
+          poetry run isort --check contribution_checker/
+          poetry run black .
+
+  mypy:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install --no-interaction
+      - name: Test typing with mypy
+        run: |
+          poetry run mypy
+
+  reuse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@v2

@@ -14,7 +14,7 @@ certain organisation in selected projects.
 
 ## Requirements
 
-* `python` >= 3.8
+* `python` >= 3.9
 * `poetry` >= 1.1.0
 
 ## Usage
