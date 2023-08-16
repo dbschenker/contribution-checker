@@ -14,16 +14,15 @@ from git import Repo, exc
 from contribution_checker._report import RepoReport
 
 
-def extract_matching_commits(report: RepoReport, repoinfo: tuple, pattern: str) -> list:
+def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -> list:
     """Clone a repository and get all its commits"""
-    repopath, repotype = repoinfo
 
     # Remote repository, clone into temp directory
-    if repotype == "remote":
+    if repoinfo["remote"]:
         with tempfile.TemporaryDirectory() as tmpdir:
             logging.info("Attempting to extract commits from remote repository")
-            logging.info("Cloning %s to %s", repopath, tmpdir)
-            repo = Repo.clone_from(url=repopath, to_path=tmpdir)
+            logging.info("Cloning %s to %s", repoinfo["path"], tmpdir)
+            repo = Repo.clone_from(url=repoinfo["path"], to_path=tmpdir)
 
             all_commits = _extract_all_commits(report, repo)
 
@@ -32,8 +31,8 @@ def extract_matching_commits(report: RepoReport, repoinfo: tuple, pattern: str) 
     # Local directory
     else:
         logging.info("Attempting to extract commits from local repository")
-        logging.info("Accessing Git repo %s", repopath)
-        repo = Repo(path=repopath)
+        logging.info("Accessing Git repo %s", repoinfo["path"])
+        repo = Repo(path=repoinfo["path"])
 
         all_commits = _extract_all_commits(report, repo)
 

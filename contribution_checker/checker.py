@@ -44,6 +44,12 @@ parser.add_argument(
     action="store_true",
     help="Show plot of commits",
 )
+parser.add_argument(
+    "-c",
+    "--cache",
+    action="store_true",
+    help="Cache cloned remote repositories to speed up subsequent checks",
+)
 # Mutually exclusive arguments, but at least one required
 parser_repotype = parser.add_mutually_exclusive_group(required=True)
 parser_repotype.add_argument(
@@ -99,11 +105,14 @@ def main():
     # Initialise the report dataclass
     report = RepoReport()
 
-    # Define whether to clone a remote repo or use a local one
+    # Define whether to clone a remote repo or use a local one, and if caching
+    # should be applied
+    repoinfo = {"path": "", "remote": False, "cache": args.cache}
     if args.repourl:
-        repoinfo = (args.repourl, "remote")
+        repoinfo["path"] = args.repourl
+        repoinfo["remote"] = True
     else:
-        repoinfo = (args.repodir, "local")
+        repoinfo["path"] = args.repodir
 
     # Get all commits from the project with certain fields
     # and extract commits that match the given pattern
