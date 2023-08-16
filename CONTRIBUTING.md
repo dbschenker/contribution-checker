@@ -11,7 +11,9 @@ requests](https://github.com/dbschenker/contribution-checker/pulls) to
 contribute code.
 
 We are committed to fostering a welcoming, respectful, and harassment-free
-environment. Be kind!
+environment, see our [Code of
+Conduct](https://github.com/dbschenker/contribution-checker/blob/main/CODE_OF_CONDUCT.md).
+Be kind!
 
 ## Licensing
 
