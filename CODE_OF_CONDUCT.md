@@ -1,4 +1,11 @@
 
+<!--
+SPDX-License-Identifier: CC-BY-4.0
+
+SPDX-FileCopyrightText: Coraline Ada Ehmke <https://where.coraline.codes/>
+SPDX-FileCopyrightText: Organization for Ethical Source <https://ethicalsource.dev/>
+-->
+
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge
