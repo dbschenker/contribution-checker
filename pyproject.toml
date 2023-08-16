@@ -31,6 +31,13 @@ checker = 'contribution_checker.checker:main'
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+# FORMATTING settings
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 100
+
 # MYPY settings
 [tool.mypy]
 files = [
