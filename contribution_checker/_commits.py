@@ -11,6 +11,7 @@ from datetime import datetime
 
 from git import Repo, exc
 
+from contribution_checker._helper import clone_or_pull_repository, get_cache_dir
 from contribution_checker._report import RepoReport
 
 
@@ -19,22 +20,23 @@ def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -
 
     # Remote repository, clone into temp directory
     if repoinfo["remote"]:
+        logging.info("Using remote repository: %s", repoinfo["path"])
+
         # Define path the remote repository shall be cloned to
         if repoinfo["cache"]:
-            repodir = "whatever"  # TODO: create .cache or so
+            repodir = get_cache_dir(repoinfo["path"])
         else:
             repodir_object = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
             repodir = repodir_object.name
 
-        logging.info("Attempting to extract commits from remote repository")
-        logging.info("Cloning %s to %s", repoinfo["path"], repodir)
-        repo = Repo.clone_from(url=repoinfo["path"], to_path=repodir)
+        clone_or_pull_repository(repoinfo["path"], repodir)
 
     # Local directory
     else:
-        logging.info("Attempting to extract commits from local repository")
-        logging.info("Accessing Git repo %s", repoinfo["path"])
-        repo = Repo(path=repoinfo["path"])
+        logging.info("Using local Git repository %s", repoinfo["path"])
+        repodir = repoinfo["path"]
+
+    repo = Repo(path=repodir)
 
     all_commits = _extract_all_commits(report, repo)
 
