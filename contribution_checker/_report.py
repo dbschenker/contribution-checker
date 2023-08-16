@@ -13,6 +13,7 @@ from dataclasses import asdict, dataclass, field
 class RepoReport:
     """Data class that holds a report about a repository"""
 
+    schema_version: str = "1.0"  # version for the JSON schema in case we introduce breaking changes
     commits_total: int = 0
     matched_total: int = 0
     matched_newest: str = ""
