@@ -47,7 +47,7 @@ jobs:
           fetch-depth: 0
       - name: Run tool against own repo
         run: |
-          poetry run checker --email ".*@deutschebahn.com" --directory .
+          poetry run contribcheck --email ".*@deutschebahn.com" --directory .
 
   formatting:
     runs-on: ubuntu-20.04
