@@ -19,14 +19,16 @@ def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -
 
     # Remote repository, clone into temp directory
     if repoinfo["remote"]:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            logging.info("Attempting to extract commits from remote repository")
-            logging.info("Cloning %s to %s", repoinfo["path"], tmpdir)
-            repo = Repo.clone_from(url=repoinfo["path"], to_path=tmpdir)
+        # Define path the remote repository shall be cloned to
+        if repoinfo["cache"]:
+            repodir = "whatever"  # TODO: create .cache or so
+        else:
+            repodir_object = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
+            repodir = repodir_object.name
 
-            all_commits = _extract_all_commits(report, repo)
-
-            matched_commits = _find_commit_matches(repo, all_commits, pattern)
+        logging.info("Attempting to extract commits from remote repository")
+        logging.info("Cloning %s to %s", repoinfo["path"], repodir)
+        repo = Repo.clone_from(url=repoinfo["path"], to_path=repodir)
 
     # Local directory
     else:
@@ -34,9 +36,14 @@ def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -
         logging.info("Accessing Git repo %s", repoinfo["path"])
         repo = Repo(path=repoinfo["path"])
 
-        all_commits = _extract_all_commits(report, repo)
+    all_commits = _extract_all_commits(report, repo)
 
-        matched_commits = _find_commit_matches(repo, all_commits, pattern)
+    matched_commits = _find_commit_matches(repo, all_commits, pattern)
+
+    # Delete temporary directory if it has been created
+    if not repoinfo["cache"]:
+        logging.info("Deleting temporary directory in which remote repository has been cloned to")
+        repodir_object.cleanup()
 
     return matched_commits
 

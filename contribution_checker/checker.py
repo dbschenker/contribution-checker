@@ -107,8 +107,9 @@ def main():
 
     # Define whether to clone a remote repo or use a local one, and if caching
     # should be applied
-    repoinfo = {"path": "", "remote": False, "cache": args.cache}
+    repoinfo = {"path": "", "remote": False, "cache": False}
     if args.repourl:
+        repoinfo["cache"] = args.cache
         repoinfo["path"] = args.repourl
         repoinfo["remote"] = True
     else:
