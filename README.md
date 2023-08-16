@@ -39,6 +39,7 @@ The output is JSON and could look like the following:
 
 ```json
 {
+  "schema_version": "1.0",
   "commits_total": 32,
   "matched_total": 14,
   "matched_newest": [
