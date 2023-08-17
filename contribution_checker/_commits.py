@@ -15,41 +15,6 @@ from contribution_checker._helper import clone_or_pull_repository, get_cache_dir
 from contribution_checker._report import RepoReport
 
 
-def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -> list:
-    """Clone a repository and get all its commits"""
-
-    # Remote repository, clone into temp directory
-    if repoinfo["remote"]:
-        logging.info("Using remote repository: %s", report.path)
-
-        # Define path the remote repository shall be cloned to
-        if repoinfo["cache"]:
-            repodir = get_cache_dir(report.path)
-        else:
-            repodir_object = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
-            repodir = repodir_object.name
-
-        clone_or_pull_repository(report.path, repodir)
-
-    # Local directory
-    else:
-        logging.info("Using local Git repository %s", report.path)
-        repodir = report.path
-
-    repo = Repo(path=repodir)
-
-    all_commits = _extract_all_commits(report, repo)
-
-    matched_commits = _find_commit_matches(repo, all_commits, pattern)
-
-    # Delete temporary directory for a remote repo if it shall not be cached
-    if repoinfo["remote"] and not repoinfo["cache"]:
-        logging.info("Deleting temporary directory in which remote repository has been cloned to")
-        repodir_object.cleanup()
-
-    return matched_commits
-
-
 def _extract_all_commits(report: RepoReport, repo: Repo) -> list:
     """Extract all commits from a local Git repository"""
     try:
@@ -127,8 +92,43 @@ def _find_commit_matches(repo: Repo, commits: list, pattern: str) -> list:
     return matched_commits
 
 
-def get_commit_data(report: RepoReport, commits: list) -> list:
-    """Extract commit dates"""
+def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -> list:
+    """Clone a repository and get all its commits"""
+
+    # Remote repository, clone into temp directory
+    if repoinfo["remote"]:
+        logging.info("Using remote repository: %s", report.path)
+
+        # Define path the remote repository shall be cloned to
+        if repoinfo["cache"]:
+            repodir = get_cache_dir(report.path)
+        else:
+            repodir_object = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
+            repodir = repodir_object.name
+
+        clone_or_pull_repository(report.path, repodir)
+
+    # Local directory
+    else:
+        logging.info("Using local Git repository %s", report.path)
+        repodir = report.path
+
+    repo = Repo(path=repodir)
+
+    all_commits = _extract_all_commits(report, repo)
+
+    matched_commits = _find_commit_matches(repo, all_commits, pattern)
+
+    # Delete temporary directory for a remote repo if it shall not be cached
+    if repoinfo["remote"] and not repoinfo["cache"]:
+        logging.info("Deleting temporary directory in which remote repository has been cloned to")
+        repodir_object.cleanup()
+
+    return matched_commits
+
+
+def get_commit_dates(report: RepoReport, commits: list) -> list:
+    """Extract commit dates and stats"""
     commit_data = []
     for commit in commits:
         date = datetime.utcfromtimestamp(commit["unixdate"]).isoformat()
@@ -144,11 +144,25 @@ def get_commit_data(report: RepoReport, commits: list) -> list:
     return commit_data
 
 
-def get_unique_authors(report: RepoReport, commits: list) -> None:
+def get_unique_authors(commits: list) -> int:
     """Get amount of unique committers in the list of matched commits"""
     # Get all unique emails (lowercased) from all given commits
     emails = {c["email"].lower() for c in commits if "email" in c}
 
     logging.debug("Found %s unique emails matching pattern: %s", len(emails), emails)
 
-    report.matched_unique_authors = len(emails)
+    return len(emails)
+
+
+def analyse_dates(report: RepoReport, dates: list) -> None:
+    """Do some analysis of the dates of given commits"""
+    if dates:
+        report.matched_total = len(dates)
+        report.matched_oldest = min(dates)
+        report.matched_newest = max(dates)
+    else:
+        logging.warning(
+            "No commits found for %s, probably because repository is broken in "
+            "cache or during clone. Run with --debug/--verbose and check earlier errors.",
+            report.path,
+        )
