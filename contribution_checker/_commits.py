@@ -20,21 +20,21 @@ def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -
 
     # Remote repository, clone into temp directory
     if repoinfo["remote"]:
-        logging.info("Using remote repository: %s", repoinfo["path"])
+        logging.info("Using remote repository: %s", report.path)
 
         # Define path the remote repository shall be cloned to
         if repoinfo["cache"]:
-            repodir = get_cache_dir(repoinfo["path"])
+            repodir = get_cache_dir(report.path)
         else:
             repodir_object = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
             repodir = repodir_object.name
 
-        clone_or_pull_repository(repoinfo["path"], repodir)
+        clone_or_pull_repository(report.path, repodir)
 
     # Local directory
     else:
-        logging.info("Using local Git repository %s", repoinfo["path"])
-        repodir = repoinfo["path"]
+        logging.info("Using local Git repository %s", report.path)
+        repodir = report.path
 
     repo = Repo(path=repodir)
 
@@ -42,8 +42,8 @@ def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -
 
     matched_commits = _find_commit_matches(repo, all_commits, pattern)
 
-    # Delete temporary directory if it has been created
-    if not repoinfo["cache"]:
+    # Delete temporary directory for a remote repo if it shall not be cached
+    if repoinfo["remote"] and not repoinfo["cache"]:
         logging.info("Deleting temporary directory in which remote repository has been cloned to")
         repodir_object.cleanup()
 
@@ -52,7 +52,15 @@ def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -
 
 def _extract_all_commits(report: RepoReport, repo: Repo) -> list:
     """Extract all commits from a local Git repository"""
-    mainbranch = repo.head.reference
+    try:
+        mainbranch = repo.head.reference
+    except TypeError as branch_exc:
+        logging.error(
+            "Main branch could not be defined, probably because HEAD is detached. "
+            "Try to clean the cache and/or re-run the checker without caching enabled. Error: %s",
+            branch_exc,
+        )
+        return []
 
     commits = list(repo.iter_commits(rev=mainbranch))
     report.commits_total = len(commits)

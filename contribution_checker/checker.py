@@ -90,9 +90,16 @@ def configure_logger(args) -> logging.Logger:
 
 def analyse_dates(report: RepoReport, dates: list) -> None:
     """Do some analysis of the dates of given commits"""
-    report.matched_total = len(dates)
-    report.matched_oldest = min(dates)
-    report.matched_newest = max(dates)
+    if dates:
+        report.matched_total = len(dates)
+        report.matched_oldest = min(dates)
+        report.matched_newest = max(dates)
+    else:
+        logging.warning(
+            "Not commits found for %s, probably because repository has broken in "
+            "cache or during clone. Check earlier errors.",
+            report.path,
+        )
 
 
 def main():
@@ -107,13 +114,13 @@ def main():
 
     # Define whether to clone a remote repo or use a local one, and if caching
     # should be applied
-    repoinfo = {"path": "", "remote": False, "cache": False}
+    repoinfo = {"remote": False, "cache": False}
     if args.repourl:
+        report.path = args.repourl
         repoinfo["cache"] = args.cache
-        repoinfo["path"] = args.repourl
         repoinfo["remote"] = True
     else:
-        repoinfo["path"] = args.repodir
+        report.path = args.repodir
 
     # Get all commits from the project with certain fields
     # and extract commits that match the given pattern

@@ -8,7 +8,7 @@ import logging
 import os
 import re
 
-from git import Repo
+from git import Repo, GitCommandError
 from platformdirs import user_cache_path
 
 
@@ -40,7 +40,18 @@ def clone_or_pull_repository(repo_url: str, local_path: str):
     # Local directory isn't empty so we assume it's been cached before
     if os.listdir(local_path):
         repo = Repo(local_path)
-        repo.remotes.origin.pull()
+        if repo.head.is_detached:
+            logging.error(
+                "HEAD of repository %s is detached. Did you make manual changes "
+                "in the cached repository (%s)?",
+                repo_url,
+                local_path,
+            )
+        try:
+            repo.remotes.origin.pull()
+        except GitCommandError as exc:
+            logging.error("Pulling the newest commits failed: %s", exc)
+
         logging.info(
             "Repository already exists and has been successfully updated in %s", local_path
         )
