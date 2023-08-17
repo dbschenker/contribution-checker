@@ -28,4 +28,8 @@ def print_report(report: RepoReport) -> None:
     """Pretty print the report, based on the dataclass"""
     logging.debug("Report class content to be printed: %s", report)
     report_dict = asdict(report)
+
+    # Remove unmatched commit data from report
+    report_dict.pop("unmatched_commit_data", None)
+
     print(json.dumps(report_dict, indent=2))
