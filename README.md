@@ -41,25 +41,26 @@ The output is JSON and could look like the following:
 ```json
 {
   "schema_version": "1.0",
-  "commits_total": 32,
-  "matched_total": 14,
+  "path": "https://github.com/fsfe/reuse-tool",
+  "commits_total": 1860,
+  "matched_total": 12,
   "matched_newest": [
-    "2022-12-20T19:31:41",
-    "24 files, +173 lines, -1 lines"
+    "2023-06-22T12:59:39",
+    "1 files, +7 lines, -2 lines"
   ],
   "matched_oldest": [
-    "2019-10-01T08:17:09",
-    "1 files, +4 lines, -0 lines"
+    "2023-01-19T10:10:52",
+    "1 files, +3 lines, -0 lines"
   ],
-  "matched_unique_authors": 3,
+  "matched_unique_authors": 1,
   "matched_commit_data": [
     [
-      "2022-12-20T19:31:41",
-      "24 files, +173 lines, -1 lines"
+      "2023-06-22T12:59:39",
+      "1 files, +7 lines, -2 lines"
     ],
     [
-      "2022-12-09T15:57:30",
-      "1 files, +11 lines, -2 lines"
+      "2023-06-22T09:45:24",
+      "5 files, +385 lines, -10 lines"
     ],
     [
       "redacted to save space",
