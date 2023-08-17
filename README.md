@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # Contribution Checker
 
+[![Test suites](https://github.com/dbschenker/contribution-checker/actions/workflows/test.yaml/badge.svg)](https://github.com/dbschenker/contribution-checker/actions/workflows/test.yaml)
 <!-- TODO: Add REUSE API badge once public -->
 
 Check for all commits matching a certain email address pattern in a local or
