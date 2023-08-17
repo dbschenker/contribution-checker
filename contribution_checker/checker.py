@@ -8,12 +8,14 @@
 
 import argparse
 import logging
+import sys
 
 from contribution_checker._commits import (
     extract_matching_commits,
     get_commit_data,
     get_unique_authors,
 )
+from contribution_checker._helper import clean_cache
 from contribution_checker._plot import plot_commits
 from contribution_checker._report import RepoReport, print_report
 
@@ -67,6 +69,10 @@ parser_repotype.add_argument(
     dest="repodir",
     help=("A single local directory to lint. Example: -d ../git/foo/bar"),
 )
+# Maintenance "commands"
+parser_repotype.add_argument(
+    "--cache-clean", action="store_true", help="Maintenance: Clean the cache directory, then exit"
+)
 
 
 def configure_logger(args) -> logging.Logger:
@@ -108,6 +114,11 @@ def main():
 
     # Set logger settings
     configure_logger(args=args)
+
+    # Execute maintenance commands if set
+    if any([args.cache_clean]):
+        clean_cache()
+        sys.exit(0)
 
     # Initialise the report dataclass
     report = RepoReport()

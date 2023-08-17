@@ -7,8 +7,9 @@
 import logging
 import os
 import re
+from shutil import rmtree
 
-from git import Repo, GitCommandError
+from git import GitCommandError, Repo
 from platformdirs import user_cache_path
 
 
@@ -22,6 +23,16 @@ def url_to_dirname(url: str) -> str:
     win_escaped = re.sub(r'[\\/:*?"<>|]', "_", unix_escaped)
     # Trim or truncate the name if it's too long (Windows limit: 260 characters)
     return win_escaped[:260]
+
+
+def clean_cache() -> None:
+    """Clean the whole cache directory"""
+    cache_dir = user_cache_path("contribution-checker")
+    try:
+        rmtree(cache_dir)
+        print("Cache cleaned")
+    except FileNotFoundError:
+        print("Cache directory does not exist")
 
 
 def get_cache_dir(url: str) -> str:
