@@ -21,6 +21,7 @@ class RepoReport:  # pylint: disable=too-many-instance-attributes
     matched_oldest: str = ""
     matched_unique_authors: int = 0
     matched_commit_data: list = field(default_factory=list)
+    unmatched_commit_data: list = field(default_factory=list)
 
 
 def print_report(report: RepoReport) -> None:

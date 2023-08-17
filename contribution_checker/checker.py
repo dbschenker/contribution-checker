@@ -128,10 +128,10 @@ def main():
     report.matched_unique_authors = get_unique_authors(matched_commits)
 
     # Extract the dates of the matched commits
-    commit_data = get_commit_dates(report, matched_commits)
+    get_commit_dates(report, matched_commits)
 
     # Analyse the commit data, e.g. by dates
-    analyse_dates(report, commit_data)
+    analyse_dates(report)
 
     # Print report to user
     print_report(report)
