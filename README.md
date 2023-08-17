@@ -22,17 +22,17 @@ certain organisation in selected projects.
 We recommend to run this tool via `poetry` that takes care of installing the
 correct dependencies in a clean encironment.
 
-You can find all supported flags by running `poetry run checker --help`.
+You can find all supported flags by running `poetry run contribution-checker --help`.
 
 Basic examples are:
 
 ```bash
 # Check a remote repository for DB authors
-poetry run checker -e ".*@deutschebahn.com" -r https://github.com/dbsystel/playground
+poetry run contribution-checker -e ".*@deutschebahn.com" -r https://github.com/dbsystel/playground
 # Check a remote repository for DB authors and plot the results
-poetry run checker -e ".*@deutschebahn.com" -r https://github.com/fsfe/reuse-tool --plot
+poetry run contribution-checker -e ".*@deutschebahn.com" -r https://github.com/fsfe/reuse-tool --plot
 # Check a local repository for DB authors
-poetry run checker -e ".*@deutschebahn.com" -d ../Git/dbsystel-playground
+poetry run contribution-checker -e ".*@deutschebahn.com" -d ../Git/dbsystel-playground
 ```
 
 The output is JSON and could look like the following:
