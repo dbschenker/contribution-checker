@@ -102,8 +102,8 @@ def analyse_dates(report: RepoReport, dates: list) -> None:
         report.matched_newest = max(dates)
     else:
         logging.warning(
-            "Not commits found for %s, probably because repository has broken in "
-            "cache or during clone. Check earlier errors.",
+            "No commits found for %s, probably because repository is broken in "
+            "cache or during clone. Run with --debug/--verbose and check earlier errors.",
             report.path,
         )
 
