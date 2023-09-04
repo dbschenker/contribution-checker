@@ -75,8 +75,10 @@ def _get_commit_stats(repo: Repo, commit: dict) -> dict:
 
 
 def _find_commit_matches(repo: Repo, commits: list, pattern: str) -> list:
-    """Go through each commit and check for pattern. If positive, add to list"""
-    matched_commits = []
+    """Go through each commit and check for pattern. Returns a list of all
+    checked commits. For commits matching the expresison, also return commit
+    stats and flag them as matched."""
+    checked_commits = []
     pattern_re = re.compile(pattern)
 
     for commit in commits:
@@ -91,18 +93,18 @@ def _find_commit_matches(repo: Repo, commits: list, pattern: str) -> list:
             # this isn't necessary
             commit = _get_commit_stats(repo, commit)
             # Append commit to list of matches commits
-            matched_commits.append(commit)
+            checked_commits.append(commit)
         else:
             logging.debug(
                 "Commit %s by author '%s' does not match pattern", commit["hash"], commit["email"]
             )
             commit["matched"] = False
             # Append commit to list of matches commits
-            matched_commits.append(commit)
+            checked_commits.append(commit)
 
-    logging.info("Found %s commits matching given pattern", len(matched_commits))
+    logging.info("Found %s commits matching given pattern", len(checked_commits))
 
-    return matched_commits
+    return checked_commits
 
 
 def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -> list:
