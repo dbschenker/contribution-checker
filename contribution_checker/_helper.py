@@ -51,17 +51,22 @@ def clone_or_pull_repository(repo_url: str, local_path: str):
     # Local directory isn't empty so we assume it's been cached before
     if os.listdir(local_path):
         repo = Repo(local_path)
-        if repo.head.is_detached:
+        if repo.head.is_detached or repo.is_dirty():
             logging.error(
-                "HEAD of repository %s is detached. Did you make manual changes "
-                "in the cached repository (%s)?",
+                "HEAD of repository %s is detached or dirty. Did you make "
+                "manual changes in the cached repository (%s)?",
                 repo_url,
                 local_path,
             )
         try:
-            repo.remotes.origin.pull()
-        except GitCommandError as exc:
-            logging.error("Pulling the newest commits failed: %s", exc)
+            # fetch origin
+            repo.remotes.origin.fetch()
+            # reset --hard to origin/$branchname, assuming that the user did not
+            # change the branch and that the project did not change their main
+            # branch
+            repo.git.reset(f"origin/{repo.head.ref}", "--hard")
+        except (GitCommandError, TypeError) as exc:
+            logging.error("Fetching and resetting to the newest commits failed: %s", exc)
 
         logging.info(
             "Repository already exists and has been successfully updated in %s", local_path
