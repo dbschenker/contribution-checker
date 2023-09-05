@@ -85,8 +85,9 @@ def configure_logger(args) -> logging.Logger:
 def analyse_dates(report: RepoReport, dates: list) -> None:
     """Do some analysis of the dates of given commits"""
     report.matched_total = len(dates)
-    report.matched_oldest = min(dates)
-    report.matched_newest = max(dates)
+    if report.matched_total:
+        report.matched_oldest = min(dates)
+        report.matched_newest = max(dates)
 
 
 def main():
