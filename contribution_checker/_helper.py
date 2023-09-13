@@ -9,8 +9,23 @@ import os
 import re
 from shutil import rmtree
 
-from git import GitCommandError, Repo
+from git import GitCommandError, RemoteProgress, Repo
 from platformdirs import user_cache_path
+from tqdm import tqdm
+
+
+class CloneProgress(RemoteProgress):
+    """Clone progress bar"""
+
+    def __init__(self):
+        super().__init__()
+        self.progbar = tqdm()
+        self.progbar.write("Cloning repository...")
+
+    def __call__(self, op_code, cur_count, max_count=None, message=""):
+        self.progbar.total = max_count
+        self.progbar.n = cur_count
+        self.progbar.refresh()
 
 
 def url_to_dirname(url: str) -> str:
@@ -74,7 +89,7 @@ def clone_or_pull_repository(repo_url: str, local_path: str):
 
     # Directory is empty, so probably a temp dir or first-time cache
     else:
-        repo = Repo.clone_from(url=repo_url, to_path=local_path)
+        repo = Repo.clone_from(url=repo_url, to_path=local_path, progress=CloneProgress())
         logging.info(
             "Repository didn't exist yet locally and has been successfully cloned to %s",
             local_path,

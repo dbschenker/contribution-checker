@@ -21,10 +21,15 @@ class RepoReport:  # pylint: disable=too-many-instance-attributes
     matched_oldest: str = ""
     matched_unique_authors: int = 0
     matched_commit_data: list = field(default_factory=list)
+    unmatched_commit_data: list = field(default_factory=list)
 
 
 def print_report(report: RepoReport) -> None:
     """Pretty print the report, based on the dataclass"""
     logging.debug("Report class content to be printed: %s", report)
     report_dict = asdict(report)
+
+    # Remove unmatched commit data from report
+    report_dict.pop("unmatched_commit_data", None)
+
     print(json.dumps(report_dict, indent=2))

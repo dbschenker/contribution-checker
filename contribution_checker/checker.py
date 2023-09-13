@@ -11,8 +11,9 @@ import logging
 import sys
 
 from contribution_checker._commits import (
+    analyse_dates,
     extract_matching_commits,
-    get_commit_data,
+    get_commit_dates,
     get_unique_authors,
 )
 from contribution_checker._helper import clean_cache
@@ -94,20 +95,6 @@ def configure_logger(args) -> logging.Logger:
     return log
 
 
-def analyse_dates(report: RepoReport, dates: list) -> None:
-    """Do some analysis of the dates of given commits"""
-    if dates:
-        report.matched_total = len(dates)
-        report.matched_oldest = min(dates)
-        report.matched_newest = max(dates)
-    else:
-        logging.warning(
-            "No commits found for %s, probably because repository is broken in "
-            "cache or during clone. Run with --debug/--verbose and check earlier errors.",
-            report.path,
-        )
-
-
 def main():
     """Main function"""
     args = parser.parse_args()
@@ -138,13 +125,13 @@ def main():
     matched_commits = extract_matching_commits(report, repoinfo, args.email)
 
     # Identify the number of unique authors inside the matched commits
-    get_unique_authors(report, matched_commits)
+    report.matched_unique_authors = get_unique_authors(matched_commits)
 
     # Extract the dates of the matched commits
-    commit_data = get_commit_data(report, matched_commits)
+    get_commit_dates(report, matched_commits)
 
     # Analyse the commit data, e.g. by dates
-    analyse_dates(report, commit_data)
+    analyse_dates(report)
 
     # Print report to user
     print_report(report)

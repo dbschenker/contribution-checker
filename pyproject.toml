@@ -15,6 +15,7 @@ python = ">=3.9,<4.0"
 gitpython = "^3.1.32"
 numpy = "^1.25.2"
 matplotlib = "^3.7.2"
+tqdm = "^4.66.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -23,6 +24,7 @@ black = "^23.7.0"
 pylama = "^8.4.1"
 isort = "^5.12.0"
 mypy = "^1.5.0"
+types-tqdm = "^4.66.0.1"
 
 [tool.poetry.scripts]
 contribution-checker = 'contribution_checker.checker:main'
