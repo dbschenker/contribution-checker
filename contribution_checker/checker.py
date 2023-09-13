@@ -8,12 +8,14 @@
 
 import argparse
 import logging
+import sys
 
 from contribution_checker._commits import (
     extract_matching_commits,
     get_commit_data,
     get_unique_authors,
 )
+from contribution_checker._helper import clean_cache
 from contribution_checker._plot import plot_commits
 from contribution_checker._report import RepoReport, print_report
 
@@ -44,6 +46,12 @@ parser.add_argument(
     action="store_true",
     help="Show plot of commits",
 )
+parser.add_argument(
+    "-c",
+    "--cache",
+    action="store_true",
+    help="Cache cloned remote repositories to speed up subsequent checks",
+)
 # Mutually exclusive arguments, but at least one required
 parser_repotype = parser.add_mutually_exclusive_group(required=True)
 parser_repotype.add_argument(
@@ -60,6 +68,10 @@ parser_repotype.add_argument(
     "--directory",
     dest="repodir",
     help=("A single local directory to lint. Example: -d ../git/foo/bar"),
+)
+# Maintenance "commands"
+parser_repotype.add_argument(
+    "--cache-clean", action="store_true", help="Maintenance: Clean the cache directory, then exit"
 )
 
 
@@ -84,9 +96,16 @@ def configure_logger(args) -> logging.Logger:
 
 def analyse_dates(report: RepoReport, dates: list) -> None:
     """Do some analysis of the dates of given commits"""
-    report.matched_total = len(dates)
-    report.matched_oldest = min(dates)
-    report.matched_newest = max(dates)
+    if dates:
+        report.matched_total = len(dates)
+        report.matched_oldest = min(dates)
+        report.matched_newest = max(dates)
+    else:
+        logging.warning(
+            "No commits found for %s, probably because repository is broken in "
+            "cache or during clone. Run with --debug/--verbose and check earlier errors.",
+            report.path,
+        )
 
 
 def main():
@@ -96,14 +115,23 @@ def main():
     # Set logger settings
     configure_logger(args=args)
 
+    # Execute maintenance commands if set
+    if any([args.cache_clean]):
+        clean_cache()
+        sys.exit(0)
+
     # Initialise the report dataclass
     report = RepoReport()
 
-    # Define whether to clone a remote repo or use a local one
+    # Define whether to clone a remote repo or use a local one, and if caching
+    # should be applied
+    repoinfo = {"remote": False, "cache": False}
     if args.repourl:
-        repoinfo = (args.repourl, "remote")
+        report.path = args.repourl
+        repoinfo["cache"] = args.cache
+        repoinfo["remote"] = True
     else:
-        repoinfo = (args.repodir, "local")
+        report.path = args.repodir
 
     # Get all commits from the project with certain fields
     # and extract commits that match the given pattern

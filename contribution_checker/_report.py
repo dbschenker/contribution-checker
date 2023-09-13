@@ -10,10 +10,11 @@ from dataclasses import asdict, dataclass, field
 
 
 @dataclass
-class RepoReport:
+class RepoReport:  # pylint: disable=too-many-instance-attributes
     """Data class that holds a report about a repository"""
 
     schema_version: str = "1.0"  # version for the JSON schema in case we introduce breaking changes
+    path: str = ""
     commits_total: int = 0
     matched_total: int = 0
     matched_newest: str = ""

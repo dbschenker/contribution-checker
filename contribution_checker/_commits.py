@@ -11,40 +11,56 @@ from datetime import datetime
 
 from git import Repo, exc
 
+from contribution_checker._helper import clone_or_pull_repository, get_cache_dir
 from contribution_checker._report import RepoReport
 
 
-def extract_matching_commits(report: RepoReport, repoinfo: tuple, pattern: str) -> list:
+def extract_matching_commits(report: RepoReport, repoinfo: dict, pattern: str) -> list:
     """Clone a repository and get all its commits"""
-    repopath, repotype = repoinfo
 
     # Remote repository, clone into temp directory
-    if repotype == "remote":
-        with tempfile.TemporaryDirectory() as tmpdir:
-            logging.info("Attempting to extract commits from remote repository")
-            logging.info("Cloning %s to %s", repopath, tmpdir)
-            repo = Repo.clone_from(url=repopath, to_path=tmpdir)
+    if repoinfo["remote"]:
+        logging.info("Using remote repository: %s", report.path)
 
-            all_commits = _extract_all_commits(report, repo)
+        # Define path the remote repository shall be cloned to
+        if repoinfo["cache"]:
+            repodir = get_cache_dir(report.path)
+        else:
+            repodir_object = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
+            repodir = repodir_object.name
 
-            matched_commits = _find_commit_matches(repo, all_commits, pattern)
+        clone_or_pull_repository(report.path, repodir)
 
     # Local directory
     else:
-        logging.info("Attempting to extract commits from local repository")
-        logging.info("Accessing Git repo %s", repopath)
-        repo = Repo(path=repopath)
+        logging.info("Using local Git repository %s", report.path)
+        repodir = report.path
 
-        all_commits = _extract_all_commits(report, repo)
+    repo = Repo(path=repodir)
 
-        matched_commits = _find_commit_matches(repo, all_commits, pattern)
+    all_commits = _extract_all_commits(report, repo)
+
+    matched_commits = _find_commit_matches(repo, all_commits, pattern)
+
+    # Delete temporary directory for a remote repo if it shall not be cached
+    if repoinfo["remote"] and not repoinfo["cache"]:
+        logging.info("Deleting temporary directory in which remote repository has been cloned to")
+        repodir_object.cleanup()
 
     return matched_commits
 
 
 def _extract_all_commits(report: RepoReport, repo: Repo) -> list:
     """Extract all commits from a local Git repository"""
-    mainbranch = repo.head.reference
+    try:
+        mainbranch = repo.head.reference
+    except TypeError as branch_exc:
+        logging.error(
+            "Main branch could not be defined, probably because HEAD is detached. "
+            "Try to clean the cache and/or re-run the checker without caching enabled. Error: %s",
+            branch_exc,
+        )
+        return []
 
     commits = list(repo.iter_commits(rev=mainbranch))
     report.commits_total = len(commits)
