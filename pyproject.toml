@@ -12,7 +12,7 @@ packages = [{include = "contribution_checker"}]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-gitpython = "^3.1.37"
+gitpython = "^3.1.41"
 numpy = "^1.25.2"
 matplotlib = "^3.7.2"
 tqdm = "^4.66.1"
